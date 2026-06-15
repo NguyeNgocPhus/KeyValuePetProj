@@ -1,0 +1,8 @@
+Starting Node 2 on port 8002...
+Exception in thread "main" java.lang.NoClassDefFoundError: com/fasterxml/jackson/databind/ObjectMapper
+	at org.phunn.Node.<init>(Node.java:27)
+	at org.phunn.Main.main(Main.java:26)
+Caused by: java.lang.ClassNotFoundException: com.fasterxml.jackson.databind.ObjectMapper
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:580)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:490)
+	... 2 more

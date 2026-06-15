@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  node1:
+    build: .
+    container_name: node1
+    ports:
+      - "8001:8001"
+    volumes:
+      - node1_data:/app/data
+    command: ["1", "8001", "/app/data/node_1_wal.log", "2:node2:8002", "3:node3:8003"]
+    networks:
+      - kv_network
+
+  node2:
+    build: .
+    container_name: node2
+    ports:
+      - "8002:8002"
+    volumes:
+      - node2_data:/app/data
+    command: ["2", "8002", "/app/data/node_2_wal.log", "1:node1:8001", "3:node3:8003"]
+    networks:
+      - kv_network
+
+  node3:
+    build: .
+    container_name: node3
+    ports:
+      - "8003:8003"
+    volumes:
+      - node3_data:/app/data
+    command: ["3", "8003", "/app/data/node_3_wal.log", "1:node1:8001", "2:node2:8002"]
+    networks:
+      - kv_network
+
+volumes:
+  node1_data:
+  node2_data:
+  node3_data:
+
+networks:
+  kv_network:
+    driver: bridge
