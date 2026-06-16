@@ -13,7 +13,9 @@ public class NodeElectionTest {
     @BeforeEach
     public void setUp() throws Exception {
         new File("node_1.log").delete();
+        new File("node_1.log.meta").delete();
         new File("node_2.log").delete();
+        new File("node_2.log.meta").delete();
         node1 = new Node(1, 19001, Map.of(2, "127.0.0.1:19002"), "node_1.log");
         node2 = new Node(2, 19002, Map.of(1, "127.0.0.1:19001"), "node_2.log");
     }
@@ -23,7 +25,9 @@ public class NodeElectionTest {
         node1.stop();
         node2.stop();
         new File("node_1.log").delete();
+        new File("node_1.log.meta").delete();
         new File("node_2.log").delete();
+        new File("node_2.log.meta").delete();
     }
 
     @Test

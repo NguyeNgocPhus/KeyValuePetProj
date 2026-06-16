@@ -20,6 +20,7 @@ public class NodeReplicationTest {
     @BeforeEach
     public void setUp() throws Exception {
         new File("leader.log").delete();
+        new File("leader.log.meta").delete();
         mockFollowerSocket = new ServerSocket(19502);
         
         leader = new Node(1, 19501, Map.of(2, "127.0.0.1:19502"), "leader.log");
@@ -36,6 +37,7 @@ public class NodeReplicationTest {
         mockFollowerSocket.close();
         executor.shutdownNow();
         new File("leader.log").delete();
+        new File("leader.log.meta").delete();
     }
 
     @Test

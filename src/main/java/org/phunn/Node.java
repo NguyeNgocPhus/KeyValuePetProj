@@ -52,6 +52,7 @@ public class Node {
 
     public synchronized void start() throws IOException {
         running = true;
+        loadMetadata();
         // Load log from WAL
         WalLogger wal = new WalLogger(walPath);
         this.log.addAll(wal.load());
@@ -124,6 +125,7 @@ public class Node {
         currentGeneration++;
         votedFor = id;
         resetElectionTimeout();
+        saveMetadata();
         
         long lastLogOffset = log.isEmpty() ? 0 : log.get(log.size() - 1).offset;
         long lastLogGen = log.isEmpty() ? 0 : log.get(log.size() - 1).generation;
@@ -191,6 +193,7 @@ public class Node {
         votedFor = null;
         System.out.println("[Node " + id + "] Stepped down to FOLLOWER for generation " + currentGeneration);
         resetElectionTimeout();
+        saveMetadata();
     }
 
     private void sendHeartbeats() {
@@ -297,6 +300,7 @@ public class Node {
                 votedFor = msg.candidateId;
                 System.out.println("[Node " + id + "] Voted for Candidate " + msg.candidateId + " for gen " + currentGeneration);
                 resetElectionTimeout();
+                saveMetadata();
             }
             return resp;
         }
@@ -352,6 +356,7 @@ public class Node {
                     if (msg.leaderCommitOffset > commitOffset) {
                         commitOffset = Math.min(msg.leaderCommitOffset, resp.matchOffset);
                         applyCommitted();
+                        saveMetadata();
                         this.notifyAll();
                     }
                 }
@@ -453,6 +458,7 @@ public class Node {
                     System.out.println("[Node " + id + "] Advancing commitOffset up to " + N + " (majority match, gen matches current)");
                     commitOffset = N;
                     applyCommitted();
+                    saveMetadata();
                     this.notifyAll(); // Wake up client threads waiting in waitForCommit
                     break;
                 } else {
@@ -470,5 +476,38 @@ public class Node {
             }
         }
         lastApplied = entry.offset;
+    }
+
+    private void saveMetadata() {
+        Properties props = new Properties();
+        props.setProperty("commitOffset", String.valueOf(commitOffset));
+        props.setProperty("currentGeneration", String.valueOf(currentGeneration));
+        props.setProperty("votedFor", votedFor == null ? "" : String.valueOf(votedFor));
+        
+        String metaPath = walPath + ".meta";
+        try (FileOutputStream out = new FileOutputStream(metaPath)) {
+            props.store(out, "Node Metadata");
+        } catch (IOException e) {
+            System.err.println("[Node " + id + "] Failed to save metadata: " + e.getMessage());
+        }
+    }
+
+    private void loadMetadata() {
+        String metaPath = walPath + ".meta";
+        File file = new File(metaPath);
+        if (!file.exists()) {
+            return;
+        }
+        Properties props = new Properties();
+        try (FileInputStream in = new FileInputStream(file)) {
+            props.load(in);
+            this.commitOffset = Long.parseLong(props.getProperty("commitOffset", "0"));
+            this.currentGeneration = Long.parseLong(props.getProperty("currentGeneration", "0"));
+            String votedForStr = props.getProperty("votedFor", "");
+            this.votedFor = votedForStr.isEmpty() ? null : Integer.parseInt(votedForStr);
+            System.out.println("[Node " + id + "] Loaded metadata: commitOffset=" + commitOffset + ", currentGeneration=" + currentGeneration + ", votedFor=" + votedFor);
+        } catch (IOException | NumberFormatException e) {
+            System.err.println("[Node " + id + "] Failed to load metadata: " + e.getMessage());
+        }
     }
 }

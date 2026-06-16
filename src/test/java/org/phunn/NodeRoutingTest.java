@@ -16,6 +16,7 @@ public class NodeRoutingTest {
     @BeforeEach
     public void setUp() throws Exception {
         new File("node_1_wal.log").delete();
+        new File("node_1_wal.log.meta").delete();
         node = new Node(1, 18001, Map.of(2, "127.0.0.1:18002", 3, "127.0.0.1:18003"), "node_1_wal.log");
         node.start();
         Thread.sleep(100);
@@ -25,6 +26,7 @@ public class NodeRoutingTest {
     public void tearDown() {
         node.stop();
         new File("node_1_wal.log").delete();
+        new File("node_1_wal.log.meta").delete();
     }
 
     @Test

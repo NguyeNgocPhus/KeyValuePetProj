@@ -18,6 +18,7 @@ public class ClusterTest {
         // Clear old logs
         for (int i = 1; i <= 3; i++) {
             new File("node_" + i + "_wal.log").delete();
+            new File("node_" + i + "_wal.log.meta").delete();
         }
     }
 
@@ -30,6 +31,7 @@ public class ClusterTest {
         }
         for (int i = 1; i <= 3; i++) {
             new File("node_" + i + "_wal.log").delete();
+            new File("node_" + i + "_wal.log.meta").delete();
         }
     }
 
